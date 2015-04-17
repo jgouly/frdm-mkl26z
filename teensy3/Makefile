@@ -7,10 +7,10 @@ ARDUINOPATH ?= ../../../../..
 #ARDUINOPATH ?= ../../../..
 
 # configurable options
-OPTIONS = -DF_CPU=48000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
+OPTIONS = -DF_CPU=48000000 -DUSB_HID -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
 
 # options needed by many Arduino libraries to configure for Teensy 3.0
-OPTIONS += -D__MK20DX256__ -DARDUINO=10600 -DTEENSYDUINO=121
+OPTIONS += -D__MKL26Z64__ -DARDUINO=10600 -DTEENSYDUINO=121
 
 
 # Other Makefiles and project templates for Teensy 3.x:
@@ -27,20 +27,20 @@ OPTIONS += -D__MK20DX256__ -DARDUINO=10600 -DTEENSYDUINO=121
 #************************************************************************
 
 # path location for Teensy Loader, teensy_post_compile and teensy_reboot
-TOOLSPATH = $(ARDUINOPATH)/hardware/tools   # on Linux
+TOOLSPATH = #$(ARDUINOPATH)/hardware/tools   # on Linux
 
 # path location for Arduino libraries (currently not used)
 LIBRARYPATH = $(ARDUINOPATH)/libraries
 
 # path location for the arm-none-eabi compiler
-COMPILERPATH = $(ARDUINOPATH)/hardware/tools/arm/bin
+COMPILERPATH = /usr/bin/ #$(ARDUINOPATH)/hardware/tools/arm/bin
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mcpu=cortex-m4 -mthumb -nostdlib -MMD $(OPTIONS) -I.
+CPPFLAGS = -Wall -g -Os -mcpu=cortex-m0plus -mthumb -nostdlib -MMD $(OPTIONS) -I.
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++0x -felide-constructors -fno-exceptions -fno-rtti
@@ -49,7 +49,7 @@ CXXFLAGS = -std=gnu++0x -felide-constructors -fno-exceptions -fno-rtti
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 --specs=nano.specs -mcpu=cortex-m4 -mthumb -Tmk20dx256.ld
+LDFLAGS = -Os -Wl,--gc-sections,--defsym=__rtc_localtime=0 -mcpu=cortex-m0plus -mthumb -Tmkl26z64.ld
 
 # additional libraries to link
 LIBS = -lm
@@ -70,22 +70,20 @@ OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
 
 # the actual makefile rules (all .o files built by GNU make's default implicit rules)
 
-all: $(TARGET).hex
+all: $(TARGET).srec
 
 $(TARGET).elf: $(OBJS) mk20dx256.ld
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-%.hex: %.elf
+%.srec: %.elf
 	$(SIZE) $<
-	$(OBJCOPY) -O ihex -R .eeprom $< $@
-	$(abspath $(TOOLSPATH))/teensy_post_compile -file=$(basename $@) -path=$(shell pwd) -tools=$(abspath $(TOOLSPATH))
-	-$(abspath $(TOOLSPATH))/teensy_reboot
+	$(OBJCOPY) -O srec -R .eeprom $< $@
 
 
 # compiler generated dependency info
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex $(TARGET).srec
 
 

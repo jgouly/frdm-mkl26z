@@ -564,7 +564,7 @@ void ResetHandler(void)
 	// enable osc, 8-32 MHz range, low power mode
 	MCG_C2 = MCG_C2_RANGE0(2) | MCG_C2_EREFS;
 	// switch to crystal as clock source, FLL input = 16 MHz / 512
-	MCG_C1 =  MCG_C1_CLKS(2) | MCG_C1_FRDIV(4);
+	MCG_C1 =  MCG_C1_CLKS(2) | MCG_C1_FRDIV(3);
 	// wait for crystal oscillator to begin
 	while ((MCG_S & MCG_S_OSCINIT0) == 0) ;
 	// wait for FLL to use oscillator
@@ -590,7 +590,7 @@ void ResetHandler(void)
     #if F_CPU == 72000000
 	MCG_C5 = MCG_C5_PRDIV0(5);		 // config PLL input for 16 MHz Crystal / 6 = 2.667 Hz
     #else
-	MCG_C5 = MCG_C5_PRDIV0(3);		 // config PLL input for 16 MHz Crystal / 4 = 4 MHz
+	MCG_C5 = MCG_C5_PRDIV0(1);		 // config PLL input for 16 MHz Crystal / 4 = 4 MHz
     #endif
     #if F_CPU == 168000000
 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(18); // config PLL for 168 MHz output
